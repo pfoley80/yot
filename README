@@ -1,0 +1,17 @@
+The Yurt of Things (yot) - a simple event system for Arduino boards.
+See http://www.ddimit.org for more information about the UfT lab.
+
+arduino-sketches/
+    Sketches (C/C++ code) for the Arudino toolchain. This includes the yot client and some test programs
+
+arduino-libraries/
+    Custom C/C++ libraries for the Arduino
+
+easy_twitter/
+    A Twitter library wrapper with OAuth information cached
+
+pyramid/
+    The Pyramid (formerly Pylons) WSGI server for making events public and general managment
+
+scripts/
+    Other Python scripts
