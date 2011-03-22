@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title>The Yurt of Things</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <link rel="shortcut icon" href="${request.static_url('yot:static/favicon.ico')}" />
+  <link rel="stylesheet" href="${request.static_url('yot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <script src="${request.static_url('yot:static/js/jquery.js')}"></script> 
+  <script src="${request.static_url('yot:static/js/jquery.json.js')}"></script> 
+  <style type="text/css">
+       #top {
+         height:auto;
+       }
+
+       #top h2 {
+         padding:0.6em;
+       }
+
+       #content {
+         padding:1em;
+       }
+
+       .image-frame {
+         background-color:#F0F0F0;
+         padding:15px;
+         float:right; border: 3px dashed #E0E0E0;
+       }
+
+       .event-control {
+         background-color:#F6F6F6;
+         border: 1px solid #F0F0F0;
+         position:relative;
+       }
+
+       .title {
+         color: #909090;
+         font-size:1.2em;
+         background-color:#FFFFFF;
+         padding:5px;
+       }
+      
+       .body {
+         padding:15px;
+       }
+
+       .event-boolean {
+         padding:1em;
+       }
+
+      .json_error {
+         background-color:#FFF4F4; color: #603030; padding:0.5em; display:none;
+       }
+      .json_ok {
+         background-color:#F4FFF4; color: #306030; padding:0.5em; display:none;
+       }
+  </style>
+  <!--[if lte IE 6]>
+  <link rel="stylesheet" href="${request.static_url('yot:static/ie6.css')}" type="text/css" media="screen" charset="utf-8" />
+  <![endif]-->
+</head>
+<body>
+  <div id="wrap">
+      <div id="top">         
+         <h2 class="align-left"><strong>yot</strong> - The Yurt of Things</h2>
+      </div>
+      <div id="content">
+         <!-- <img class="image-frame" src="${request.static_url('yot:static/yurt.jpg')}" /> -->
+
+         <div class="event-control">
+            <div class="title">Powerbar</div>
+            <div class="body">
+               <!-- <button class="event-boolean" id="event_value_boolean_POWERBAR" value='{"v":{"1":"On","0":"Off"},"c":"1"}'>On</button> -->
+               <button class="event-boolean" id="event_value_POWERBAR_0" value='0'>Off</button>
+               <button class="event-boolean" id="event_value_POWERBAR_1" value='1'>On</button>
+               <span>for arduino</span>
+
+               <select id="event_recipient_POWERBAR" name="event_recipient_POWERBAR">
+                  <option tal:repeat="r recipients" value="${r}">${r}</option>
+               </select>
+
+               <div style="margin-top:10px;" class="" id="event_status_POWERBAR"></div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div id="footer">
+      <div class="footer"></div>
+   </div>
+</body>
+<script type="text/javascript">
+$(document).ready(function() {
+   var send_event = function(e, recipient, status_node) {
+     $.post("${request.route_url('add')}", {"event" : $.toJSON(e), "recipient" : recipient}, function(data, textStatus, jqXHR) {     
+            status_node.show();
+            if (data.error != undefined) 
+               status_node.append($("<div>").addClass("json_error").html(data.error).show().delay(2000).fadeOut(1000, function() {
+                 $(this).remove();
+               }));
+            else
+               status_node.append($("<div>").addClass("json_ok").html(data.status).show().delay(2000).fadeOut(1000, function() {
+                 $(this).remove();
+               }));
+         }, "json");
+   }
+
+   var powerbar_send_event = function(event) {
+      var t = $(event.target);
+      send_event(
+         {"type": "POWERBAR", "sender": "${sender}", "data":t.attr("value")}, 
+         $("#event_recipient_POWERBAR").val(),
+         $("#event_status_POWERBAR"));
+   }
+   
+   $("#event_value_POWERBAR_0").click(powerbar_send_event);
+   $("#event_value_POWERBAR_1").click(powerbar_send_event);   
+
+   $("#event_value_boolean_POWERBAR").click(function(event) {
+      var t = $(event.target);   // our target as a jQuery object
+      var json = $.parseJSON(t.attr("value"));   
+
+      var e = {"type": "POWERBAR", "sender": "${sender}", "data":json.c};
+      var recipient = $("#event_recipient_POWERBAR").val();     
+
+      send_event(e, recipient, $("#event_status_POWERBAR"));
+    
+      // reverse the label and value
+      json.c = (json.c == "0" ? "1" : "0");
+      t.attr("value", $.toJSON(json));
+      t.html(json.v[json.c]);
+   });
+});
+</script>
+</html>
+
+   
